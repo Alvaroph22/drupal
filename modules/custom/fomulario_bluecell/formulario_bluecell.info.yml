@@ -1,7 +1,0 @@
-name: 'Formulario Bluecell'
-type: module
-description: 'Módulo para gestionar el formulario de Bluecell.'
-core_version_requirement: ^10 || ^11
-package: Custom
-dependencies:
-  - drupal:node

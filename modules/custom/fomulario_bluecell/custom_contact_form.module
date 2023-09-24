@@ -1,0 +1,115 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_preprocess_HOOK() for page templates.
+ */
+function custom_contact_form_preprocess_page(&$variables) {
+  // Verifica si estamos en la página single.php.
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.node.canonical' && \Drupal::routeMatch()->getParameter('node')->getType() == 'article') {
+    // Agrega el formulario después del contenido.
+    $form = \Drupal::formBuilder()->getForm('Drupal\custom_contact_form\Form\CustomContactForm');
+    $variables['content']['custom_contact_form'] = $form;
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function custom_contact_form_schema() {
+  $schema = [];
+  $schema['custom_contact_form_data'] = [
+    'description' => 'Stores custom contact form submissions.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique identifier for the submission.',
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Name of the submitter.',
+      ],
+      'email' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Email address of the submitter.',
+      ],
+      'phone' => [
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+        'description' => 'Phone number of the submitter.',
+      ],
+      'message' => [
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'Message submitted by the user.',
+      ],
+      'subject' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Subject of the message.',
+      ],
+      'accept_policy' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Acceptance of policies (0 = No, 1 = Yes).',
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Timestamp of when the submission was created.',
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function custom_contact_form_permission() {
+  return [
+    'administer custom contact form' => [
+      'title' => t('Administer Custom Contact Form'),
+      'description' => t('Access to the custom contact form administration page.'),
+    ],
+  ];
+}
+
+/**
+ * Implements hook_menu().
+ */
+function custom_contact_form_menu() {
+  $items = [];
+
+  $items['admin/config/custom-contact-form'] = [
+    'title' => 'Custom Contact Form Submissions',
+    'description' => 'View submissions of the custom contact form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['Drupal\custom_contact_form\Form\CustomContactFormAdmin'],
+    'access arguments' => ['administer custom contact form'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function custom_contact_form_uninstall() {
+  // Elimina la tabla de la base de datos.
+  db_drop_table('custom_contact_form_data');
+}
+
